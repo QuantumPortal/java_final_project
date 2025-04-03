@@ -14,6 +14,7 @@ import javafx.scene.transform.Translate;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.w3c.dom.css.Rect;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,8 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class HelloApplication extends Application
 {
-
-    private static Rectangle rect = new Rectangle();
     private static long curTime = System.currentTimeMillis();
 
     @Override
@@ -34,16 +33,19 @@ public class HelloApplication extends Application
         Group root  = new Group();
         Scene scene = new Scene(root, bounds.getWidth(), bounds.getHeight());
 
-        rect.setWidth(50);
-        rect.setHeight(100);
-        rect.setFill(Color.BLACK);
 
-        Translate translate = new Translate();
-        translate.setX(bounds.getMaxX()/2-25);
-        translate.setY(bounds.getMaxY()/2-25);
+        Rectangle rect = new Rectangle(50,75);
+        rect.setFill(new Color(0.6,0.6,0.6,0.9));
 
+        TileEntity tileEntity = new TileEntity(
+                1000,
+                1000,
+                25,
+                25,
+                rect
+        );
 
-        root.getChildren().add(rect);
+        tileEntity.addToGroup(root);
 
         Circle centerDot = new Circle();
 
@@ -57,11 +59,6 @@ public class HelloApplication extends Application
         primaryStage.setScene(scene);
 
         primaryStage.show();
-
-        Rotate rotate = new Rotate();
-        rect.getTransforms().add(rotate);
-        rect.getTransforms().add(translate);
-
 
         for (int i = 0; i < bounds.getMaxX()/50; i++) {
             Rectangle gridLine = new Rectangle();
@@ -106,19 +103,18 @@ public class HelloApplication extends Application
 
         Duration      interval = Duration.millis(5);
         AtomicInteger counter = new AtomicInteger();
-        AtomicBoolean toggle   = new AtomicBoolean(true);
         KeyFrame frame    = new KeyFrame(interval, actionEvent -> {
+
             long deltaTime = System.currentTimeMillis() - curTime;
 
-            rotate.setPivotX(centerDot.getCenterX());
-            rotate.setPivotY(centerDot.getCenterY());
 
-            translate.setX(centerDot.getCenterX()-25);
-            translate.setY(centerDot.getCenterY()-25);
+            tileEntity.setRotateAxis(centerDot.getCenterX(),
+                                     centerDot.getCenterY());
 
+            tileEntity.moveTo(centerDot.getCenterX(),
+                              centerDot.getCenterY());
 
-
-            rotate.setAngle(rotate.getAngle() + deltaTime/10f);
+            //tileEntity.addRotate(deltaTime/10f);
 
 
             counter.set(counter.get() + 1);
