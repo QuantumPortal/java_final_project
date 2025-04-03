@@ -6,6 +6,7 @@ import javafx.application.Application;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
@@ -23,6 +24,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class HelloApplication extends Application
 {
     private static long curTime = System.currentTimeMillis();
+    public static int activeGroup;
+    public static int activeEntity;
 
     @Override
     public void start(Stage primaryStage) throws IOException
@@ -34,30 +37,69 @@ public class HelloApplication extends Application
         Scene scene = new Scene(root, bounds.getWidth(), bounds.getHeight());
 
 
-        Rectangle rect = new Rectangle(50,75);
-        rect.setFill(new Color(0.6,0.6,0.6,0.9));
-
-        TileEntity tileEntity = new TileEntity(
+        Rectangle rect = new Rectangle(50,50);
+        rect.setFill(new Color(0.6,0.4,0.6,0.9));
+        TileEntity tileEntity1 = new TileEntity(
                 1000,
                 1000,
                 25,
                 25,
+                0,
                 rect
         );
 
-        tileEntity.addToGroup(root);
+        Rectangle rect1 = new Rectangle(50,50);
+        rect1.setFill(new Color(0.6,0.6,0.4,0.9));
+        TileEntity tileEntity2 = new TileEntity(
+                900,
+                300,
+                25,
+                25,
+                0,
+                rect1
+        );
 
-        Circle centerDot = new Circle();
+        Rectangle rect2 = new Rectangle(50,75);
+        rect2.setFill(new Color(0.4,0.6,0.6,0.9));
+        TileEntity tileEntity3 = new TileEntity(
+                600,
+                200,
+                25,
+                25,
+                0,
+                rect2
+        );
 
-        centerDot.setRadius(20);
-        centerDot.setFill(Color.RED);
-        centerDot.setCenterX(bounds.getMaxX()/2);
-        centerDot.setCenterY(bounds.getMaxY()/2);
+        Rectangle rect3 = new Rectangle(50,75);
+        rect3.setFill(new Color(0.3,0.7,0.2,0.9));
+        TileEntity tileEntity4 = new TileEntity(
+                300,
+                400,
+                25,
+                25,
+                0,
+                rect3
+        );
 
-        root.getChildren().add(centerDot);
+        Rectangle rect4 = new Rectangle(50,75);
+        rect4.setFill(new Color(0.7,0.3,0.5,0.9));
+        TileEntity tileEntity5 = new TileEntity(
+                400,
+                500,
+                25,
+                25,
+                0,
+                rect4
+        );
+
+        tileEntity1.addToGroup(root);
+        tileEntity2.addToGroup(root);
+        tileEntity3.addToGroup(root);
+        tileEntity4.addToGroup(root);
+        tileEntity5.addToGroup(root);
+
 
         primaryStage.setScene(scene);
-
         primaryStage.show();
 
         for (int i = 0; i < bounds.getMaxX()/50; i++) {
@@ -84,45 +126,60 @@ public class HelloApplication extends Application
 
         }
 
-        centerDot.setOnMouseReleased(event -> {
-            centerDot.setCenterX(event.getX());
-            centerDot.setCenterY(event.getY());
-            centerDot.setFill(Color.PINK);
-            centerDot.setCenterX(Math.round(centerDot.getCenterX()/50) * 50.0);
-            centerDot.setCenterY(Math.round(centerDot.getCenterY()/50) * 50.0);
+
+        boolean[][] a = {
+                {true, true},
+                {true, false}
+        };
+
+        TileEntity[] tiles = {tileEntity1,
+                              tileEntity2,
+                              tileEntity3,};
+
+        TileGroup tg = new TileGroup(a, tiles, null);
+
+
+        boolean[][] b = {
+                {true, true}
+        };
+        TileEntity[] tiles2 = {tileEntity4,tileEntity5};
+        TileGroup tg2 = new TileGroup(b, tiles2, null);
+
+
+        scene.setOnKeyPressed(event -> {
+            if (activeGroup == 0 || activeEntity == 0) {
+                return;
+            }
+            final TileGroup activeTileGroup = TileGroup.getTileGroupFromID(activeGroup);
+            final TileEntity activeTileEntity = TileEntity.getTileEntityByID(activeEntity);
+            if (event.getCode() == KeyCode.E) {
+                activeTileGroup.rotateRight();
+                activeTileGroup.updatePositionOn(activeTileEntity);
+            }
+            else if (event.getCode() == KeyCode.Q) {
+                activeTileGroup.rotateLeft();
+                activeTileGroup.updatePositionOn(activeTileEntity);
+            }
+            else if (event.getCode() == KeyCode.F) {
+                activeTileGroup.flip();
+            }
+            event.consume();
         });
-
-
-        centerDot.setOnMouseDragged(event -> {
-            centerDot.setCenterX(event.getX());
-            centerDot.setCenterY(event.getY());
-        });
-
 
 
 
         Duration      interval = Duration.millis(5);
         AtomicInteger counter = new AtomicInteger();
         KeyFrame frame    = new KeyFrame(interval, actionEvent -> {
-
             long deltaTime = System.currentTimeMillis() - curTime;
 
-
-            tileEntity.setRotateAxis(centerDot.getCenterX(),
-                                     centerDot.getCenterY());
-
-            tileEntity.moveTo(centerDot.getCenterX(),
-                              centerDot.getCenterY());
-
-            //tileEntity.addRotate(deltaTime/10f);
-
-
-            counter.set(counter.get() + 1);
-            curTime = System.currentTimeMillis();
+            //counter.set(counter.get() + 1);
         });
         Timeline timeline = new Timeline(frame);
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
+
+
 
     }
 
